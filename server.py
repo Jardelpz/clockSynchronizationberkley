@@ -6,13 +6,14 @@ from datetime import datetime, timedelta
 
 clients = []
 clients_time = {}
+cur_date = datetime.now().replace(microsecond=0)
 
 
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        server.bind(('localhost', 7777))
+        server.bind(('localhost', 5555))
         server.listen()
     except socket.error:
         return print('It was not possible to start server!\n')
@@ -49,14 +50,14 @@ def messages_treatment(client):
 def sync_time_berkley():
     difference_time = []
     clients_difference = {}
-    cur_date = datetime.now().replace(microsecond=0)
+    global cur_date
     print(f"My current time is {cur_date}")
     count = 0
     for client, client_time in clients_time.items():
         count += 1
-        diff_time = cur_date - client_time
+        diff_time = client_time - cur_date
         difference_time.append(float(diff_time.total_seconds()))
-        clients_difference.update({client: diff_time})
+        clients_difference.update({client: diff_time.total_seconds()})
 
         print(f"Client {count} time is {client_time} and diff is {diff_time.total_seconds()/60} minutes")
 
@@ -66,9 +67,12 @@ def sync_time_berkley():
     count2 = 0
     for client, client_time in clients_time.items():
         count2 += 1
-        sync_time = (client_time + timedelta(seconds=(clients_difference[client] * - 1).total_seconds() + average_time)).replace(microsecond=0)
+        sync_time = (client_time + timedelta(seconds=(clients_difference[client] * - 1) + average_time)).replace(microsecond=0)
         print(f"Client {count2} time updated is {sync_time}")
         broadcast(str(sync_time), client)
+
+    cur_date = (cur_date + timedelta(seconds=average_time)).replace(microsecond=0)
+    print(f"My new time is {cur_date}\n")
 
 
 def process_message(client, msg):

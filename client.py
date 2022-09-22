@@ -21,7 +21,7 @@ def main():
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     try:
-        client.connect(('localhost', 7777))
+        client.connect(('localhost', 5555))
     except socket.error:
         return print('It was not possible connect with server!\n')
 
@@ -36,12 +36,13 @@ def receiveMessages(client):
     while True:
         try:
             msg = client.recv(2048).decode('utf-8')
-            print(f'Server - {msg}')
             if 'input' in msg:
+                print(f'Server - {msg}')
                 global cur_date
                 print(f'My time is - {cur_date}')
                 sendMessages(client, str(cur_date))
             else:
+                print(f'Server - Please update your time to {msg}')
                 cur_date = datetime.strptime(msg, '%Y-%m-%d %H:%M:%S')
                 print(f'my current date was updated, now its: {cur_date}')
 
